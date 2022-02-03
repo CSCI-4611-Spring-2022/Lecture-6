@@ -6,6 +6,7 @@ export class AngryVectors extends GraphicsApp
 { 
     private inputVector : THREE.Vector2;
     private projectile : Projectile;
+    private arrow : THREE.Group;
 
     constructor()
     {
@@ -16,13 +17,14 @@ export class AngryVectors extends GraphicsApp
         // This will help prevent runtime errors
         this.inputVector = new THREE.Vector2();
         this.projectile = new Projectile(new THREE.Vector3(), 0.5);
+        this.arrow = new THREE.Group();
     }
 
     createScene() : void
     {
         // Setup camera
         this.camera.position.set(0, 1.6, 0);
-        this.camera.lookAt(0, 1.6, 0);
+        this.camera.lookAt(0, 1.6, 1);
         this.camera.up.set(0, 1, 0);
 
         // Create an ambient light
@@ -53,14 +55,39 @@ export class AngryVectors extends GraphicsApp
         this.scene.add(ground)
 
         // Add the projectile to the scene
-        this.projectile.position.z = -1;
-        this.projectile.position.z = -2;
+        this.projectile.position.y = 0;
+        this.projectile.position.z = 2;
         this.scene.add(this.projectile);
+
+        var arrowMaterial = new THREE.MeshLambertMaterial();
+        arrowMaterial.color.set('blue');
+
+        var arrowCylinder = new THREE.CylinderGeometry(0.05, 0.05, 2);
+        var arrowMesh = new THREE.Mesh(arrowCylinder, arrowMaterial);
+        arrowMesh.position.set(0, 1, 0);
+        this.arrow.add(arrowMesh);
+
+        var arrowCone = new THREE.ConeGeometry(0.1, 0.25);
+        var arrowConeMesh = new THREE.Mesh(arrowCone, arrowMaterial);
+        arrowConeMesh.position.set(0, 1, 0);
+        arrowMesh.add(arrowConeMesh);
+
+        this.arrow.position.set(0, 0.5, 2);
+        this.arrow.rotateX(90 * Math.PI / 180);
+        this.scene.add(this.arrow);
     }
 
     update(deltaTime : number) : void
     {
-   
+        // Camera rotation
+        //this.camera.rotateY(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
+        //this.camera.rotateX(90 * Math.PI / 180 * deltaTime * this.inputVector.y);
+
+        this.arrow.rotateZ(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
+
+        //if(this.inputVector.y != 0)
+        //    this.arrow.scale.set(1, this.arrow.scale.y * 2 * deltaTime * this.inputVector.y, 1);
+        //this.arrow.rotateX(90 * Math.PI / 180 * deltaTime * this.inputVector.y);
     }
 
     // Event handler for keyboard input
@@ -75,10 +102,6 @@ export class AngryVectors extends GraphicsApp
             this.inputVector.x = -1;
         else if(event.key == 'd' || event.key == 'ArrowRight')
             this.inputVector.x = 1;
-        else if(event.key == ' ')
-        {
-            //this.ball.reset();
-        }
     }
 
     // Event handler for keyboard input
