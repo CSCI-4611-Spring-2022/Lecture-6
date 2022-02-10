@@ -8,6 +8,9 @@ export class AngryVectors extends GraphicsApp
     private projectile : Projectile;
     private arrow : THREE.Group;
 
+    private arrowPitch : number;
+    private arrowYaw : number;
+
     constructor()
     {
         // Pass in the aspect ratio to the constructor
@@ -18,6 +21,9 @@ export class AngryVectors extends GraphicsApp
         this.inputVector = new THREE.Vector2();
         this.projectile = new Projectile(new THREE.Vector3(), 0.5);
         this.arrow = new THREE.Group();
+
+        this.arrowPitch = 20 * Math.PI / 180;
+        this.arrowYaw = 0;
     }
 
     createScene() : void
@@ -64,7 +70,8 @@ export class AngryVectors extends GraphicsApp
 
         var arrowCylinder = new THREE.CylinderGeometry(0.05, 0.05, 2);
         var arrowMesh = new THREE.Mesh(arrowCylinder, arrowMaterial);
-        arrowMesh.position.set(0, 1, 0);
+        arrowMesh.position.set(0, 0, 1);
+        arrowMesh.rotateX(90 * Math.PI / 180);
         this.arrow.add(arrowMesh);
 
         var arrowCone = new THREE.ConeGeometry(0.1, 0.25);
@@ -73,21 +80,34 @@ export class AngryVectors extends GraphicsApp
         arrowMesh.add(arrowConeMesh);
 
         this.arrow.position.set(0, 0.5, 2);
-        this.arrow.rotateX(90 * Math.PI / 180);
         this.scene.add(this.arrow);
     }
 
     update(deltaTime : number) : void
     {
-        // Camera rotation
-        //this.camera.rotateY(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
-        //this.camera.rotateX(90 * Math.PI / 180 * deltaTime * this.inputVector.y);
+        // This rotation code doesn't work correctly because of the order of rotations
+        //this.arrow.rotateX(90 * Math.PI / 180 * deltaTime * -this.inputVector.y);
+        //this.arrow.rotateY(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
+        
+        this.arrowPitch += 90 * Math.PI / 180 * deltaTime * this.inputVector.y;
+        this.arrowYaw += 90 * Math.PI / 180 * deltaTime * -this.inputVector.x;
 
-        this.arrow.rotateZ(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
+        const maxArrowYaw = 90 * Math.PI / 180;
+        const maxArrowPitch = 45 * Math.PI / 180;
 
-        //if(this.inputVector.y != 0)
-        //    this.arrow.scale.set(1, this.arrow.scale.y * 2 * deltaTime * this.inputVector.y, 1);
-        //this.arrow.rotateX(90 * Math.PI / 180 * deltaTime * this.inputVector.y);
+        if(this.arrowYaw >= maxArrowYaw)
+            this.arrowYaw = maxArrowYaw;
+        else if(this.arrowYaw <= -maxArrowYaw)
+            this.arrowYaw = -maxArrowYaw;
+
+        if(this.arrowPitch >= maxArrowPitch)
+            this.arrowPitch = maxArrowPitch;
+        else if(this.arrowPitch <= 0)
+            this.arrowPitch = 0;
+
+        var rotationMatrixX = new THREE.Matrix4().makeRotationX(-this.arrowPitch);
+        var rotationMatrixY = new THREE.Matrix4().makeRotationY(this.arrowYaw);
+        this.arrow.setRotationFromMatrix(rotationMatrixY.multiply(rotationMatrixX));
     }
 
     // Event handler for keyboard input
