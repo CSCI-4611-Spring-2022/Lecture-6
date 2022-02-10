@@ -8,10 +8,6 @@ You can run the program on [GitHub pages](https://csci-4611-spring-2022.github.i
 
 To work with this code, you will first need to install [Node.js](https://nodejs.org/en/) and [Visual Studio Code](https://code.visualstudio.com/). 
 
-## Topics
-
-- Programming with 3D vectors
-
 ## Running
 
 You will need to set up the initial project by pulling the dependencies from the node package manager with:

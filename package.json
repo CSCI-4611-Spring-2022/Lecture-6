@@ -17,7 +17,6 @@
   "scripts": {
     "dev": "vite",
     "start": "vite",
-    "build": "tsc && vite build && javascript-obfuscator ./dist/index.js --output ./dist/index.js",
-    "preview": "vite preview"
+    "build": "vite build && javascript-obfuscator ./dist/index.js --output ./dist/index.js"
   }
 }
