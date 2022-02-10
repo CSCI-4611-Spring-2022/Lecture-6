@@ -5,8 +5,5 @@ export default defineConfig({
   server: {
     open: true,
     port: 8080
-  },
-  preview: {
-    open: true
   }
 })
