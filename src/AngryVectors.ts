@@ -4,7 +4,7 @@ import { Projectile } from './Projectile'
 
 export class AngryVectors extends GraphicsApp
 { 
-    private inputVector : THREE.Vector2;
+    private inputVector : THREE.Vector3;
     private projectile : Projectile;
     private arrow : THREE.Group;
 
@@ -18,8 +18,8 @@ export class AngryVectors extends GraphicsApp
         
         // Initialize all member variables here
         // This will help prevent runtime errors
-        this.inputVector = new THREE.Vector2();
-        this.projectile = new Projectile(new THREE.Vector3(), 0.5);
+        this.inputVector = new THREE.Vector3();
+        this.projectile = new Projectile(new THREE.Vector3(0, 0.25, 2), 0.5);
         this.arrow = new THREE.Group();
 
         this.arrowPitch = 20 * Math.PI / 180;
@@ -61,8 +61,6 @@ export class AngryVectors extends GraphicsApp
         this.scene.add(ground)
 
         // Add the projectile to the scene
-        this.projectile.position.y = 0;
-        this.projectile.position.z = 2;
         this.scene.add(this.projectile);
 
         var arrowMaterial = new THREE.MeshLambertMaterial();
@@ -79,7 +77,7 @@ export class AngryVectors extends GraphicsApp
         arrowConeMesh.position.set(0, 1, 0);
         arrowMesh.add(arrowConeMesh);
 
-        this.arrow.position.set(0, 0.5, 2);
+        this.arrow.position.set(0, 0.25, 2);
         this.scene.add(this.arrow);
     }
 
@@ -88,12 +86,12 @@ export class AngryVectors extends GraphicsApp
         // This rotation code doesn't work correctly because of the order of rotations
         //this.arrow.rotateX(90 * Math.PI / 180 * deltaTime * -this.inputVector.y);
         //this.arrow.rotateY(90 * Math.PI / 180 * deltaTime * -this.inputVector.x);
-        
+
         this.arrowPitch += 90 * Math.PI / 180 * deltaTime * this.inputVector.y;
         this.arrowYaw += 90 * Math.PI / 180 * deltaTime * -this.inputVector.x;
 
         const maxArrowYaw = 90 * Math.PI / 180;
-        const maxArrowPitch = 45 * Math.PI / 180;
+        const maxArrowPitch = 75 * Math.PI / 180;
 
         if(this.arrowYaw >= maxArrowYaw)
             this.arrowYaw = maxArrowYaw;
@@ -108,33 +106,74 @@ export class AngryVectors extends GraphicsApp
         var rotationMatrixX = new THREE.Matrix4().makeRotationX(-this.arrowPitch);
         var rotationMatrixY = new THREE.Matrix4().makeRotationY(this.arrowYaw);
         this.arrow.setRotationFromMatrix(rotationMatrixY.multiply(rotationMatrixX));
+
+        const scaleSpeed = 1.5;
+        const maxScale = 3;
+        const minScale = 0.1;
+
+        this.arrow.scale.z += this.inputVector.z * scaleSpeed * deltaTime;
+
+        if(this.arrow.scale.z > maxScale)
+            this.arrow.scale.z = maxScale;
+        else if(this.arrow.scale.z < minScale)
+            this.arrow.scale.z = minScale;
+
+        this.projectile.update(deltaTime);
+    }
+
+    fire(): void
+    {
+        if(this.projectile.velocity.length() == 0)
+        {
+            const speedMultiplier = 20;
+            var speed = this.arrow.scale.z * speedMultiplier;
+
+            var direction = new THREE.Vector3(0, 0, 1);
+            direction.applyEuler(this.arrow.rotation);
+            direction.normalize();
+
+            this.projectile.velocity.copy(direction);
+            this.projectile.velocity.multiplyScalar(speed);
+        }    
     }
 
     // Event handler for keyboard input
     // You don't need to modify this function
     onKeyDown(event: KeyboardEvent): void 
     {
-        if(event.key == 'w' || event.key == 'ArrowUp')
+        if(event.key == 'w')
             this.inputVector.y = 1;
-        else if(event.key == 's' || event.key == 'ArrowDown')
+        else if(event.key == 's')
             this.inputVector.y = -1;
-        else if(event.key == 'a' || event.key == 'ArrowLeft')
+        else if(event.key == 'a')
             this.inputVector.x = -1;
-        else if(event.key == 'd' || event.key == 'ArrowRight')
+        else if(event.key == 'd')
             this.inputVector.x = 1;
+        else if(event.key == 'ArrowUp')
+            this.inputVector.z = 1;
+        else if(event.key == 'ArrowDown')
+            this.inputVector.z = -1;
+        else if(event.key == ' ')
+            this.fire();
+        else if(event.key == 'r')
+            this.projectile.reset();
     }
 
     // Event handler for keyboard input
     // You don't need to modify this function
     onKeyUp(event: KeyboardEvent): void 
     {
-        if((event.key == 'w' || event.key == 'ArrowUp') && this.inputVector.y == 1)
+        if(event.key == 'w' && this.inputVector.y == 1)
             this.inputVector.y = 0;
-        else if((event.key == 's' || event.key == 'ArrowDown') && this.inputVector.y == -1)
+        else if(event.key == 's' && this.inputVector.y == -1)
             this.inputVector.y = 0;
-        else if((event.key == 'a' || event.key == 'ArrowLeft')  && this.inputVector.x == -1)
+        else if(event.key == 'a'  && this.inputVector.x == -1)
             this.inputVector.x = 0;
-        else if((event.key == 'd' || event.key == 'ArrowRight')  && this.inputVector.x == 1)
+        else if(event.key == 'd'  && this.inputVector.x == 1)
             this.inputVector.x = 0;
+        else if(event.key == 'ArrowUp' && this.inputVector.z == 1)
+            this.inputVector.z = 0;
+        else if(event.key == 'ArrowDown' && this.inputVector.z == -1)
+            this.inputVector.z = 0;
     }
 }

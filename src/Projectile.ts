@@ -27,10 +27,15 @@ export class Projectile extends THREE.Object3D
     {
         // Reset the projectiles's position
         this.position.copy(this.initialPosition);
+
+        // Reset the velocity
+        this.velocity.set(0, 0, 0);
     }
 
     public update(deltaTime : number) : void
     {
-        // Add your code here
+        this.position.x += this.velocity.x * deltaTime;
+        this.position.y += this.velocity.y * deltaTime;
+        this.position.z += this.velocity.z * deltaTime;
     }
 }
